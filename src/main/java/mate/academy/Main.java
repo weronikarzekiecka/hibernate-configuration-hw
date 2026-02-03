@@ -1,18 +1,18 @@
 package mate.academy;
 
-import mate.academy.lib.Injector;
 import mate.academy.model.Movie;
 import mate.academy.service.MovieService;
+import mate.academy.service.impl.MovieServiceImpl;
 
 public class Main {
-
     public static void main(String[] args) {
-        Injector injector = Injector.getInstance("mate.academy");
-        MovieService service = (MovieService) injector.getInstance(MovieService.class);
-        Movie movie = new Movie();
-        movie.setTitle("The Game Of Thrones");
-        movie.setDescription("Awesome serial");
-        service.add(movie);
-        System.out.println(service.get(movie.getId()));
+        MovieService movieService = new MovieServiceImpl();
+
+        Movie movie = new Movie("Interstellar", "Space travel");
+        movieService.add(movie);
+
+        movieService.getAll().forEach(m ->
+                System.out.println(m.getId() + " " + m.getTitle())
+        );
     }
 }

@@ -1,59 +1,34 @@
 package mate.academy.dao.impl;
 
-import java.util.Optional;
+import java.util.List;
 import mate.academy.dao.MovieDao;
-import mate.academy.exception.DataProcessingException;
-import mate.academy.lib.Dao;
 import mate.academy.model.Movie;
 import mate.academy.util.HibernateUtil;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
-@Dao
 public class MovieDaoImpl implements MovieDao {
-    private final SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 
     @Override
     public Movie add(Movie movie) {
-
-        Session session = null;
         Transaction transaction = null;
-        try {
-            session = sessionFactory.openSession();
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
             session.persist(movie);
             transaction.commit();
-        } catch (RuntimeException e) {
+            return movie;
+        } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw new DataProcessingException("Can't add movie to DB " + movie, e);
-        } finally {
-            if (session != null) {
-                session.close();
-            }
+            throw new RuntimeException("Can't insert movie", e);
         }
-        return movie;
     }
 
     @Override
-    public Optional<Movie> get(Long id) {
-        Session session = null;
-        Transaction transaction = null;
-        try {
-            session = sessionFactory.openSession();
-            transaction = session.beginTransaction();
-            return Optional.ofNullable(session.find(Movie.class, id));
-        } catch (RuntimeException e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw new DataProcessingException("Can't get movie from DB by ID = " + id, e);
-        } finally {
-            if (session != null) {
-                session.close();
-            }
+    public List<Movie> getAll() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("from Movie", Movie.class).getResultList();
         }
     }
 }
