@@ -14,8 +14,13 @@ public class MovieDaoImpl implements MovieDao {
     @Override
     public Movie add(Movie movie) {
         Transaction transaction = null;
+        Session session = null;
 
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try {
+            session = HibernateUtil
+                    .getSessionFactory()
+                    .openSession();
+
             transaction = session.beginTransaction();
 
             session.persist(movie);
@@ -31,14 +36,22 @@ public class MovieDaoImpl implements MovieDao {
             }
 
             throw new DataProcessingException(
-                    "Can't insert movie into DB: " + movie, e);
+                    "Can't insert movie into DB", e);
+
+        } finally {
+
+            if (session != null) {
+                session.close();
+            }
         }
     }
 
     @Override
     public Optional<Movie> get(Long id) {
 
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = HibernateUtil
+                .getSessionFactory()
+                .openSession()) {
 
             Movie movie = session.get(Movie.class, id);
 
@@ -47,7 +60,7 @@ public class MovieDaoImpl implements MovieDao {
         } catch (Exception e) {
 
             throw new DataProcessingException(
-                    "Can't get movie by id: " + id, e);
+                    "Can't get movie by id " + id, e);
         }
     }
 }
